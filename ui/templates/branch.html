@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% block title %}{{ assumption.branch_id }} — {{ wargame.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="/">Index</a> &nbsp;›&nbsp;
+  <a href="/wargame/{{ namespace }}">{{ wargame.name }}</a> &nbsp;›&nbsp;
+  <span class="mono">{{ assumption.branch_id }}</span>
+</div>
+
+<section class="summary">
+  <div class="source-line">Branch drilldown</div>
+  <h1>{{ assumption.question_text }}</h1>
+  <p class="brief">From <em>{{ wargame.name }}</em>{% if assumption.citation %} — citation: {{ assumption.citation }}{% endif %}.</p>
+</section>
+
+<h2>Wargame's stated assumption</h2>
+<div class="kv">
+  <div><span class="k">Branch id</span><span class="v mono">{{ assumption.branch_id }}</span></div>
+  <div><span class="k">Domain</span><span class="v">{{ assumption.domain }}</span></div>
+  <div><span class="k">Horizon</span><span class="v">{{ assumption.horizon or "—" }}</span></div>
+  <div><span class="k">Wargame probability</span><span class="v"><strong>{{ "%.2f"|format(assumption.wargame_probability) }}</strong></span></div>
+  {% if assumption.dependencies %}
+  <div><span class="k">Conditional on</span><span class="v">
+    {% for d in assumption.dependencies %}<a href="/wargame/{{ namespace }}/branch/{{ d }}" class="mono">{{ d }}</a>{% if not loop.last %}, {% endif %}{% endfor %}
+  </span></div>
+  {% endif %}
+  {% if assumption.citation %}
+  <div><span class="k">Source citation</span><span class="v">{{ assumption.citation }}</span></div>
+  {% endif %}
+  {% if branch_audit %}
+  <div><span class="k">Structural sensitivity</span><span class="v">{{ "%.2f"|format(branch_audit.sensitivity) }} <small>(downstream-reach proxy)</small></span></div>
+  <div><span class="k">Audit shape</span><span class="v">{{ branch_audit.shape }}</span></div>
+  {% endif %}
+</div>
+
+{% if assumption.narrative_context %}
+<h3>Narrative context</h3>
+<p style="white-space: pre-line; font-style: italic; color: var(--text-muted); border-left: 2px solid var(--rule); padding-left: 16px;">{{ assumption.narrative_context }}</p>
+{% endif %}
+
+{# ----- Strict disagreement card ----- #}
+{% if branch_audit and branch_audit.strict %}
+{% set d = branch_audit.strict %}
+<h2>Market disagreement{% if assumption.branch_id in (audit.action_list if audit else []) %} <small style="color: var(--accent-action); font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em;">★ in action list</small>{% endif %}</h2>
+<div class="finding {% if assumption.branch_id in (audit.action_list if audit else []) %}action{% endif %}">
+  <div class="kv">
+    <div><span class="k">Wargame probability</span><span class="v">{{ "%.2f"|format(d.wargame_probability) }}</span></div>
+    <div><span class="k">Market price</span><span class="v">{{ "%.2f"|format(d.market_price_compared) }} <small>(polarity: {{ d.polarity_applied }}{% if d.polarity_applied == "inverted" %}, raw {{ "%.2f"|format(d.raw_market_price) }}{% endif %})</small></span></div>
+    <div><span class="k">Disagreement (Δ)</span><span class="v"><strong>{{ "%+.2f"|format(d.delta) }}</strong> <small>(|Δ| {{ "%.2f"|format(d.abs_delta) }})</small></span></div>
+  </div>
+  <h3>Matched market</h3>
+  <p><a href="{{ d.market_url }}">{{ d.market_question }}</a> <small>({{ d.market_platform }}, id <code>{{ d.market_id }}</code>)</small></p>
+
+  <h3>Signal profile</h3>
+  <div class="kv">
+    {% if d.signal_profile.concentration_top3 is not none %}
+    <div><span class="k">Liquidity concentration (top-3)</span><span class="v">{{ "%.0f"|format(d.signal_profile.concentration_top3 * 100) }}%</span></div>
+    {% endif %}
+    {% if d.signal_profile.volume_24h is not none %}
+    <div><span class="k">24h volume</span><span class="v">{{ d.signal_profile.volume_24h | intcomma }}</span></div>
+    {% endif %}
+    {% if d.signal_profile.volume_velocity_24h_vs_7d is not none %}
+    <div><span class="k">Volume velocity</span><span class="v">{{ "%.2f"|format(d.signal_profile.volume_velocity_24h_vs_7d) }}× baseline</span></div>
+    {% endif %}
+    <div><span class="k">Significant moves (30d)</span><span class="v">{{ d.signal_profile.n_significant_moves_30d }}</span></div>
+    {% if d.signal_profile.largest_move_30d is not none %}
+    <div><span class="k">Largest 24h move</span><span class="v">{{ "%+.4f"|format(d.signal_profile.largest_move_30d) }}</span></div>
+    {% endif %}
+    {% if d.signal_profile.price_range_30d is not none %}
+    <div><span class="k">Price range (30d)</span><span class="v">{{ "%.4f"|format(d.signal_profile.price_range_30d) }}</span></div>
+    {% endif %}
+  </div>
+  <p>
+  {% for f in d.signal_profile.flags %}<span class="flag">{{ f }}</span>{% endfor %}
+  {% if not d.signal_profile.flags %}<em style="color: var(--text-muted);">No signal-profile flags fired — no axis crossed its threshold.</em>{% endif %}
+  </p>
+  {% if d.signal_profile.notes %}
+    {% for n in d.signal_profile.notes %}
+    <p><small><em>{{ n }}</em></small></p>
+    {% endfor %}
+  {% endif %}
+</div>
+{% endif %}
+
+{# ----- Structured comparison card ----- #}
+{% if branch_audit and branch_audit.structured %}
+{% set s = branch_audit.structured %}
+<h2>Structured comparison</h2>
+<div class="finding">
+  <div class="kv">
+    <div><span class="k">Wargame probability</span><span class="v">{{ "%.2f"|format(s.wargame_probability) }}</span></div>
+    {% if s.conditioning_event %}
+    <div><span class="k">Conditional on</span><span class="v mono">{{ s.conditioning_event }}</span></div>
+    {% endif %}
+    <div><span class="k">Market price (unconditional)</span><span class="v">{{ "%.2f"|format(s.raw_market_price) }}</span></div>
+    <div><span class="k">Matched market</span><span class="v"><a href="{{ s.market_url }}">{{ s.market_question }}</a></span></div>
+  </div>
+  <div class="caveat">
+    <strong>Caveat.</strong> {{ s.comparison_caveat }}
+  </div>
+  <h3>Signal profile of the matched market</h3>
+  <div class="kv">
+    {% if s.signal_profile.concentration_top3 is not none %}
+    <div><span class="k">Liquidity concentration (top-3)</span><span class="v">{{ "%.0f"|format(s.signal_profile.concentration_top3 * 100) }}%</span></div>
+    {% endif %}
+    <div><span class="k">Significant moves (30d)</span><span class="v">{{ s.signal_profile.n_significant_moves_30d }}</span></div>
+  </div>
+  <p>
+  {% for f in s.signal_profile.flags %}<span class="flag">{{ f }}</span>{% endfor %}
+  </p>
+</div>
+{% endif %}
+
+{# ----- In-document tension ----- #}
+{% if branch_audit and branch_audit.internal_tensions %}
+<h2>In-document tension</h2>
+<p>The wargame source flags an internal contradiction relevant to this branch.
+This finding is independent of any market data.</p>
+{% for t in branch_audit.internal_tensions %}
+<div class="finding tension">
+  <div class="caveat">{{ t.tension_text }}</div>
+  {% if t.citation %}
+  <p><small>Citation: <em>{{ t.citation }}</em>. Detected via keywords:
+    {% for k in t.matched_keywords %}<code>{{ k }}</code>{% if not loop.last %}, {% endif %}{% endfor %}.</small></p>
+  {% endif %}
+</div>
+{% endfor %}
+{% endif %}
+
+{# ----- No-match: show what the matcher considered ----- #}
+{% if match and match.tier == "no_match" %}
+<h2>No plausible match</h2>
+<p>The matcher could not find a prediction-market candidate that survives the
+confidence checks. Below are the closest candidates it considered, for
+transparency.</p>
+{% if match.no_match_reason %}<p><small><em>{{ match.no_match_reason }}</em></small></p>{% endif %}
+<table>
+  <thead>
+    <tr><th>Market</th><th>Platform</th><th class="num">Combined</th><th class="num">Sem</th><th class="num">Cond</th><th class="num">Hor</th><th class="num">Spec</th></tr>
+  </thead>
+  <tbody>
+    {% for c in match.candidates %}
+    <tr>
+      <td><a href="{{ c.market_url }}">{{ c.market_question|truncate(80, True) }}</a></td>
+      <td>{{ c.market_platform }}</td>
+      <td class="num">{{ "%.2f"|format(c.scores.combined) }}</td>
+      <td class="num">{{ "%.2f"|format(c.scores.semantic) }}</td>
+      <td class="num">{{ "%.2f"|format(c.scores.conditional_structure) }}</td>
+      <td class="num">{{ "%.2f"|format(c.scores.time_horizon) }}</td>
+      <td class="num">{{ "%.2f"|format(c.scores.specificity) }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+{# ----- Metaculus sidecar ----- #}
+{% if sidecar and sidecar.forecasts %}
+<div class="sidecar">
+  <h4>Metaculus reference (sidecar — methodologically distinct from market data)</h4>
+  <p style="margin-top: 4px;">{{ sidecar.note }}</p>
+  <ul>
+    {% for f in sidecar.forecasts %}
+    <li>
+      <a href="{{ f.url }}">{{ f.title }}</a>
+      &nbsp;&middot;&nbsp;
+      {% if f.current_prediction is not none %}community {{ "%.0f"|format(f.current_prediction * 100) }}%{% else %}community prediction not accessible at current API tier — click through to view{% endif %}
+      {% if f.nr_forecasters %} &middot; {{ f.nr_forecasters }} forecasters{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% elif sidecar %}
+<div class="sidecar">
+  <h4>Metaculus reference</h4>
+  <p>{{ sidecar.note }}</p>
+</div>
+{% endif %}
+
+{% endblock %}

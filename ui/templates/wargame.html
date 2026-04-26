@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}{{ wargame.name }} — audit{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="/">Index</a> &nbsp;›&nbsp; <span>{{ wargame.name }}</span>
+</div>
+
+<section class="summary">
+  <div class="source-line">Wargame audit</div>
+  <h1>{{ wargame.name }}</h1>
+  <p class="brief">{{ wargame.brief }}</p>
+</section>
+
+{% if audit %}
+<div class="stats">
+  <div><span class="num">{{ audit.n_assumptions_total }}</span><span class="label">Assumptions</span></div>
+  <div><span class="num">{{ audit.strict_panel|length }}</span><span class="label">Strict</span></div>
+  <div><span class="num">{{ audit.structured_panel|length }}</span><span class="label">Structured</span></div>
+  <div><span class="num">{{ audit.tension_panel|length }}</span><span class="label">Tensions</span></div>
+  <div><span class="num">{{ audit.no_match_branches|length }}</span><span class="label">No match</span></div>
+  <div><span class="num">{{ audit.action_list|length }}</span><span class="label">Action</span></div>
+</div>
+{% else %}
+<p><em>This wargame has no audit yet. Run the pipeline to generate one — see the index page for the command.</em></p>
+{% endif %}
+
+{# ----- 2x2 figure ----- #}
+{% if audit and audit.strict_panel %}
+<figure>
+  <div class="chart-2x2" id="chart-2x2"></div>
+  <figcaption>
+    <span class="figure-num">Figure 1.</span>
+    Strict disagreements plotted as <em>structural sensitivity</em> (vertical) by
+    <em>absolute disagreement</em> (horizontal). Items in the upper-right quadrant
+    have both substantial market disagreement and high downstream effect on the
+    wargame's conclusion. Click any point for the per-assumption drilldown.
+    <span class="source-line">Sources: Polymarket and Kalshi (live, cached). Sensitivity is a
+    structural proxy from the wargame's dependency graph; see README.</span>
+  </figcaption>
+</figure>
+<script src="/static/chart_2x2.js"></script>
+<script>
+  fetch("/api/wargame/{{ namespace }}/audit.json")
+    .then(r => r.json())
+    .then(audit => render2x2(document.getElementById("chart-2x2"), audit, "{{ namespace }}"));
+</script>
+{% endif %}
+
+{# ----- Action list ----- #}
+{% if audit and audit.action_list %}
+<h2>Action list</h2>
+<p>Items in the upper-right of Figure 1 — high disagreement and high
+sensitivity. These are the strict-tier disagreements an analyst should review
+first.</p>
+{% for d in audit.strict_panel if d.branch_id in audit.action_list %}
+  <div class="finding action">
+    <div class="finding-header">
+      <h3>
+        <a href="/wargame/{{ namespace }}/branch/{{ d.branch_id }}">
+          {{ assumptions_by_branch[d.branch_id].question_text }}
+        </a><br>
+        <span class="branch-id">{{ d.branch_id }}</span>
+      </h3>
+      <span class="finding-tag action">action</span>
+    </div>
+    <div class="kv">
+      <div><span class="k">Wargame probability</span><span class="v">{{ "%.2f"|format(d.wargame_probability) }}</span></div>
+      <div><span class="k">Market price ({{ d.polarity_applied }})</span><span class="v">{{ "%.2f"|format(d.market_price_compared) }}</span></div>
+      <div><span class="k">Disagreement (Δ)</span><span class="v"><strong>{{ "%+.2f"|format(d.delta) }}</strong></span></div>
+      <div><span class="k">Structural sensitivity</span><span class="v">{{ "%.2f"|format(branch_audit_by_id[d.branch_id].sensitivity) }}</span></div>
+      <div><span class="k">Matched market</span><span class="v"><a href="{{ d.market_url }}">{{ d.market_question }}</a> <small>({{ d.market_platform }})</small></span></div>
+      <div><span class="k">Signal-profile flags</span><span class="v">
+        {% for f in d.signal_profile.flags %}<span class="flag">{{ f }}</span>{% endfor %}
+        {% if not d.signal_profile.flags %}<em>none — no axis crossed its threshold</em>{% endif %}
+      </span></div>
+    </div>
+  </div>
+{% endfor %}
+{% endif %}
+
+{# ----- Strict disagreements (non-action) ----- #}
+{% if audit %}
+{% set strict_non_action = audit.strict_panel|rejectattr("branch_id", "in", audit.action_list)|list %}
+{% if strict_non_action %}
+<h2>Other strict disagreements</h2>
+<p>Apples-to-apples comparisons that did not meet the action-list threshold.
+The disagreement is comparable but smaller, the sensitivity is lower, or both.</p>
+{% for d in strict_non_action|sort(attribute="abs_delta", reverse=True) %}
+  <div class="finding">
+    <div class="finding-header">
+      <h3>
+        <a href="/wargame/{{ namespace }}/branch/{{ d.branch_id }}">
+          {{ assumptions_by_branch[d.branch_id].question_text }}
+        </a><br>
+        <span class="branch-id">{{ d.branch_id }}</span>
+      </h3>
+      <span class="finding-tag">strict</span>
+    </div>
+    <div class="kv">
+      <div><span class="k">Wargame</span><span class="v">{{ "%.2f"|format(d.wargame_probability) }}</span></div>
+      <div><span class="k">Market</span><span class="v">{{ "%.2f"|format(d.market_price_compared) }} <small>({{ d.polarity_applied }})</small></span></div>
+      <div><span class="k">Δ</span><span class="v">{{ "%+.2f"|format(d.delta) }}</span></div>
+      <div><span class="k">Sensitivity</span><span class="v">{{ "%.2f"|format(branch_audit_by_id[d.branch_id].sensitivity) }}</span></div>
+      <div><span class="k">Market</span><span class="v"><a href="{{ d.market_url }}">{{ d.market_question }}</a></span></div>
+    </div>
+  </div>
+{% endfor %}
+{% endif %}
+{% endif %}
+
+{# ----- Structured comparisons ----- #}
+{% if audit and audit.structured_panel %}
+<h2>Structured comparisons</h2>
+<p>The matcher found semantically related markets but the comparison is not
+apples-to-apples. The most common case is a wargame branch that is conditional
+on a precipitating event (e.g., "if invasion, will Japan grant basing?")
+matched against an unconditional market (e.g., "will the invasion occur?").
+These pairs do not produce a single disagreement number; the structured
+comparison preserves both numbers and labels the difference.</p>
+{% for s in audit.structured_panel %}
+  <div class="finding">
+    <div class="finding-header">
+      <h3>
+        <a href="/wargame/{{ namespace }}/branch/{{ s.branch_id }}">
+          {{ assumptions_by_branch[s.branch_id].question_text }}
+        </a><br>
+        <span class="branch-id">{{ s.branch_id }}</span>
+      </h3>
+      <span class="finding-tag">structured</span>
+    </div>
+    <div class="kv">
+      <div><span class="k">Wargame probability</span><span class="v">{{ "%.2f"|format(s.wargame_probability) }}</span></div>
+      {% if s.conditioning_event %}
+      <div><span class="k">Conditional on</span><span class="v mono">{{ s.conditioning_event }}</span></div>
+      {% endif %}
+      <div><span class="k">Market price</span><span class="v">{{ "%.2f"|format(s.raw_market_price) }} <small>(unconditional)</small></span></div>
+      <div><span class="k">Matched market</span><span class="v"><a href="{{ s.market_url }}">{{ s.market_question }}</a></span></div>
+    </div>
+    <div class="caveat">
+      {{ s.comparison_caveat }}
+    </div>
+  </div>
+{% endfor %}
+{% endif %}
+
+{# ----- In-document tensions ----- #}
+{% if audit and audit.tension_panel %}
+<h2>In-document tensions</h2>
+<p>Contradictions surfaced from the wargame source's own narrative — the
+analyst flagged a tension between two parts of the source document. These
+findings are independent of any market data and are auditable from the wargame
+input alone.</p>
+{% for t in audit.tension_panel %}
+  <div class="finding tension">
+    <div class="finding-header">
+      <h3>
+        <a href="/wargame/{{ namespace }}/branch/{{ t.branch_id }}">
+          {{ assumptions_by_branch[t.branch_id].question_text }}
+        </a><br>
+        <span class="branch-id">{{ t.branch_id }}</span>
+      </h3>
+      <span class="finding-tag tension">tension</span>
+    </div>
+    <div class="caveat">{{ t.tension_text }}</div>
+    {% if t.citation %}
+      <p><small>Citation: <em>{{ t.citation }}</em>.</small> Detected via keywords:
+      {% for k in t.matched_keywords %}<code>{{ k }}</code>{% if not loop.last %}, {% endif %}{% endfor %}.</p>
+    {% endif %}
+  </div>
+{% endfor %}
+{% endif %}
+
+{# ----- No-match list ----- #}
+{% if audit and audit.no_match_branches %}
+<h2>No plausible market match</h2>
+<p>The matcher could not find a prediction-market candidate that survives the
+conditional-structure, horizon, and specificity checks. This is the
+<strong>primary path</strong> for most wargame branches — see the README's
+epistemic-stance section. The drilldown for each branch shows the closest
+candidates the matcher considered and (where they exist) Metaculus references
+as labeled sidecar.</p>
+<ul class="no-match-list">
+  {% for bid in audit.no_match_branches %}
+    <li><a href="/wargame/{{ namespace }}/branch/{{ bid }}"><code>{{ bid }}</code></a>
+      &mdash; {{ assumptions_by_branch[bid].question_text|truncate(110, True) }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{# ----- Awaiting reviewer ----- #}
+{% if audit and audit.no_approval_branches %}
+<h2>Awaiting reviewer approval</h2>
+<p>The matcher returned partial-tier candidates that have not yet been
+reviewed. Run the override CLI to approve, reject, or set a polarity flag.</p>
+<ul class="no-match-list">
+  {% for bid in audit.no_approval_branches %}
+    <li><a href="/wargame/{{ namespace }}/branch/{{ bid }}"><code>{{ bid }}</code></a>
+      &mdash; {{ assumptions_by_branch[bid].question_text|truncate(110, True) }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{# ----- Wargame README, if present ----- #}
+{% if readme_html %}
+<h2>About this wargame</h2>
+<div class="markdown">{{ readme_html|safe }}</div>
+{% endif %}
+
+{% endblock %}

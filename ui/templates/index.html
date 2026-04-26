@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="summary">
+  <div class="source-line">Index</div>
+  <h1>Wargame audits</h1>
+  <p class="brief">A tool that takes a wargame as input, extracts its implicit
+  probability assumptions, and audits each one against live prediction-market
+  prices from Polymarket and Kalshi. Each audit produces three first-class
+  output components: strict disagreements, structured comparisons (where the
+  wargame's conditional probability and the market's unconditional price
+  measure different things), and in-document tensions surfaced from the
+  wargame's own narrative.</p>
+</section>
+
+<h2>Available wargames</h2>
+
+<ul class="wargame-list">
+  {% for w in wargames %}
+    <li>
+      <h3><a href="/wargame/{{ w.namespace }}">{{ w.name }}</a></h3>
+      <div class="meta">
+        {{ w.n_branches }} branches
+        {% if w.has_audit %} &middot; audit ready{% endif %}
+        {% if w.has_matches %} &middot; matches ready{% endif %}
+        {% if w.has_sidecar %} &middot; Metaculus sidecar built{% endif %}
+        {% if not w.has_audit %} &middot; <em>no audit yet — run <code>python -m src.analysis.audit examples/{{ w.namespace }}/wargame.yaml</code></em>{% endif %}
+      </div>
+      <div class="brief">{{ w.brief|truncate(280, True) }}</div>
+    </li>
+  {% endfor %}
+  {% if not wargames %}
+    <li>
+      <p>No wargames found in <code>examples/</code>. Add a directory containing
+      <code>wargame.yaml</code> and refresh.</p>
+    </li>
+  {% endif %}
+</ul>
+{% endblock %}

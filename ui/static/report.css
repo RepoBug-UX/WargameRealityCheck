@@ -1,0 +1,308 @@
+/* Wargame Reality Check — academic-report aesthetic.
+ *
+ * Reference register: Distill.pub, RAND/CSIS report PDFs, GitHub PR review.
+ * Body type: system serif. Off-white bg. Restrained color. Tables are tables.
+ * Caveats are prose, not tooltips. The 2x2 is one figure, not the page.
+ */
+
+:root {
+  /* color: warm, low-contrast, academic — not SaaS-startup stark */
+  --bg: #faf8f3;
+  --bg-elevated: #f4f1e8;
+  --text: #2a2a28;
+  --text-muted: #6e6a5e;
+  --rule: #d8d2c2;
+  --rule-strong: #b8b1a0;
+  --link: #5b4a2e;
+  --link-hover: #2a2010;
+
+  /* sparing accents — only for action items, only when they earn it */
+  --accent-action: #8b3a1e;     /* warm dark-red for top-right quadrant */
+  --accent-action-bg: #f3e2d8;
+  --accent-tension: #b67d00;    /* amber for in-document tension */
+  --accent-tension-bg: #f3eddb;
+  --accent-sidecar: #5a6e7e;    /* cool gray-blue for Metaculus references */
+
+  /* type */
+  --serif: Charter, "Iowan Old Style", "Source Serif Pro", "Source Serif 4",
+           Cambria, Georgia, serif;
+  --sans:  -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue",
+           Arial, sans-serif;
+  --mono:  ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.55;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* a column constrained for reading, not stretched dashboard-wide */
+.report {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 56px 32px 120px;
+}
+
+/* ---- typography ---- */
+h1, h2, h3, h4 {
+  font-family: var(--serif);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  margin: 1.8em 0 0.6em;
+  color: var(--text);
+}
+h1 { font-size: 30px; line-height: 1.25; margin-top: 0; }
+h2 { font-size: 22px; line-height: 1.3; padding-bottom: 0.2em; border-bottom: 1px solid var(--rule); }
+h3 { font-size: 19px; }
+h4 { font-size: 16px; color: var(--text-muted); text-transform: uppercase;
+     letter-spacing: 0.05em; font-weight: 600; }
+p { margin: 0.8em 0; }
+em { font-style: italic; }
+strong { font-weight: 600; }
+small { font-size: 0.86em; color: var(--text-muted); }
+
+a { color: var(--link); text-decoration: underline; text-decoration-thickness: 1px;
+    text-underline-offset: 2px; }
+a:hover { color: var(--link-hover); }
+
+code, kbd, .mono { font-family: var(--mono); font-size: 0.92em; }
+code { background: var(--bg-elevated); padding: 1px 5px; border-radius: 2px;
+       color: var(--text); }
+
+/* ---- header / nav ---- */
+.site-header {
+  border-bottom: 1px solid var(--rule);
+  background: var(--bg);
+}
+.site-header-inner {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 18px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.site-header-inner a { color: var(--text-muted); text-decoration: none; }
+.site-header-inner a:hover { color: var(--text); }
+.site-title { font-family: var(--serif); font-weight: 600; color: var(--text); }
+
+/* ---- summary block ---- */
+.summary {
+  border-top: 2px solid var(--text);
+  padding-top: 18px;
+  margin-bottom: 36px;
+}
+.summary .source-line {
+  font-size: 14px; color: var(--text-muted);
+  margin-bottom: 6px; letter-spacing: 0.02em; text-transform: uppercase;
+}
+.summary .brief {
+  font-size: 16px; color: var(--text-muted);
+  border-left: 2px solid var(--rule); padding-left: 16px;
+  white-space: pre-line;  /* preserve YAML | block formatting */
+}
+
+/* ---- stats strip ---- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  margin: 24px 0;
+}
+.stats > div {
+  background: var(--bg);
+  padding: 12px 14px;
+}
+.stats .num { font-family: var(--serif); font-size: 22px; line-height: 1; font-weight: 600; }
+.stats .label { font-size: 12px; color: var(--text-muted); text-transform: uppercase;
+                letter-spacing: 0.05em; margin-top: 4px; display: block; }
+
+/* ---- audit-finding cards ---- */
+.finding {
+  border: 1px solid var(--rule);
+  background: var(--bg);
+  padding: 18px 22px;
+  margin: 14px 0;
+}
+.finding.action {
+  border-left: 3px solid var(--accent-action);
+  background: linear-gradient(to right, var(--accent-action-bg) 0, var(--bg) 4%);
+}
+.finding.tension {
+  border-left: 3px solid var(--accent-tension);
+  background: linear-gradient(to right, var(--accent-tension-bg) 0, var(--bg) 4%);
+}
+.finding-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.finding-header h3 { margin: 0; font-size: 17px; }
+.finding-header h3 .branch-id { font-family: var(--mono); font-size: 14px;
+  color: var(--text-muted); font-weight: 400; }
+.finding-tag {
+  font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border: 1px solid var(--rule-strong);
+  color: var(--text-muted);
+  background: var(--bg);
+  white-space: nowrap;
+}
+.finding-tag.action { color: var(--accent-action); border-color: var(--accent-action); }
+.finding-tag.tension { color: var(--accent-tension); border-color: var(--accent-tension); }
+
+/* ---- tables ---- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  font-family: var(--sans);
+  margin: 10px 0;
+}
+table th, table td {
+  border-bottom: 1px solid var(--rule);
+  padding: 6px 10px 6px 0;
+  text-align: left;
+  vertical-align: top;
+}
+table th { font-weight: 600; color: var(--text-muted); text-transform: uppercase;
+  font-size: 11px; letter-spacing: 0.05em; }
+table td.num, table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+table td.mono { font-family: var(--mono); font-size: 13px; }
+
+/* ---- key-value list (used in finding cards and drilldown) ---- */
+.kv {
+  font-family: var(--sans);
+  font-size: 14px;
+}
+.kv > div {
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  gap: 14px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.kv > div:last-child { border-bottom: none; }
+.kv .k { color: var(--text-muted); font-size: 13px; }
+.kv .v { font-variant-numeric: tabular-nums; }
+.kv .v.mono { font-family: var(--mono); font-size: 13px; }
+
+/* ---- caveat — prominent prose, not a tooltip ---- */
+.caveat {
+  font-family: var(--serif);
+  font-size: 15px;
+  font-style: italic;
+  color: var(--text);
+  background: var(--bg-elevated);
+  border-left: 3px solid var(--accent-tension);
+  padding: 12px 16px;
+  margin: 12px 0;
+}
+.caveat strong { font-style: normal; }
+
+/* ---- figure — captioned, with source line ---- */
+figure {
+  margin: 32px 0;
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  padding: 20px;
+}
+figure svg { display: block; margin: 0 auto; }
+figcaption {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: left;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+}
+figcaption .figure-num { color: var(--text); font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.05em; font-size: 12px; }
+figcaption .source-line { display: block; margin-top: 6px; font-size: 12px; }
+
+/* ---- sidecar (Metaculus references) ---- */
+.sidecar {
+  border: 1px dashed var(--accent-sidecar);
+  padding: 16px 18px;
+  margin: 14px 0;
+  background: var(--bg);
+}
+.sidecar h4 { margin-top: 0; color: var(--accent-sidecar); }
+.sidecar ul { padding-left: 20px; margin: 8px 0; }
+.sidecar li { font-size: 14px; margin: 6px 0; font-family: var(--sans); }
+
+/* ---- signal-profile flag ---- */
+.flag {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 12px;
+  padding: 2px 8px;
+  margin: 0 3px 3px 0;
+  border: 1px solid var(--rule-strong);
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+}
+
+/* ---- breadcrumbs / navigation crumbs ---- */
+.breadcrumb {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+.breadcrumb a { color: var(--text-muted); }
+
+/* ---- 2x2 axis labels (within the SVG, but also the wrapper) ---- */
+.chart-2x2 text { font-family: var(--sans); fill: var(--text-muted); }
+.chart-2x2 .axis-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+.chart-2x2 .point { fill: var(--text); }
+.chart-2x2 .point.action { fill: var(--accent-action); }
+.chart-2x2 .quadrant-action { fill: var(--accent-action-bg); opacity: 0.5; }
+.chart-2x2 .axis-line { stroke: var(--rule-strong); stroke-width: 1; }
+.chart-2x2 .gridline { stroke: var(--rule); stroke-width: 1; stroke-dasharray: 2 3; }
+.chart-2x2 .point-label { font-size: 11px; fill: var(--text); }
+
+/* ---- README rendered as content ---- */
+.markdown { font-family: var(--serif); }
+.markdown h1, .markdown h2, .markdown h3 { font-family: var(--serif); }
+.markdown blockquote {
+  border-left: 3px solid var(--rule);
+  margin: 12px 0;
+  padding: 4px 16px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+.markdown ul, .markdown ol { padding-left: 24px; }
+
+/* ---- index page ---- */
+.wargame-list { list-style: none; padding: 0; margin: 0; }
+.wargame-list li {
+  padding: 22px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.wargame-list h3 { margin: 0; font-size: 19px; }
+.wargame-list h3 a { text-decoration: none; color: var(--text); }
+.wargame-list h3 a:hover { color: var(--link-hover); text-decoration: underline; }
+.wargame-list .meta { font-size: 13px; color: var(--text-muted); font-family: var(--sans); }
+.wargame-list .brief { white-space: pre-line; color: var(--text-muted); margin-top: 8px;
+                       font-size: 15px; }
+
+/* ---- subtle anchor for "no match" lists ---- */
+.no-match-list { font-family: var(--mono); font-size: 13px; color: var(--text-muted); }
+.no-match-list code { background: transparent; padding: 0; color: var(--text-muted); }
+.no-match-list li { margin: 3px 0; }
