@@ -4,7 +4,7 @@
 
 ## Status
 
-Work in progress. Phase 1 (prediction-market data layer) and Phase 2 (signal profile) implemented. See `/Users/justinli/.claude/plans/build-plan-wargame-abundant-waterfall.md` for the full plan.
+Work in progress. Phase 1 (prediction-market data layer) and Phase 2 (signal profile) implemented. See  for the full plan.
 
 ## Problem
 
