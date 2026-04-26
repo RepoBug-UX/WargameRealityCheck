@@ -1,0 +1,164 @@
+name: First Battle Taiwan 2027 (synthetic)
+brief: |
+  A condensed structured representation in the spirit of the CSIS First Battle
+  wargame (Cancian et al., 2023). Models a People's Republic of China invasion
+  of Taiwan in 2027 and surfaces strategic-political assumptions that drive
+  the wargame's conclusion. Probabilities below are an analyst's illustrative
+  prior — the whole point of this tool is to audit them. This file is a
+  stand-in fixture, not the CSIS source data.
+
+branches:
+  # === scenario triggers ===
+  - branch_id: prc_invasion_2027
+    question: PRC initiates a large-scale amphibious invasion of Taiwan during 2027
+    probability: 0.20
+    domain: strategic-political
+    horizon: 12 months
+    notes: Window assumes leadership consolidation completes and exercise tempo continues to escalate.
+
+  - branch_id: roc_sustained_resistance_30d
+    question: Taiwan armed forces mount organized resistance for at least 30 days after invasion
+    probability: 0.75
+    domain: operational-military
+    horizon: first 30 days
+    depends_on: [prc_invasion_2027]
+
+  # === U.S. response ===
+  - branch_id: us_kinetic_within_7d
+    question: U.S. forces engage in direct kinetic combat within 7 days of invasion
+    probability: 0.70
+    domain: strategic-political
+    horizon: first 7 days
+    depends_on: [prc_invasion_2027]
+    notes: Premised on a sitting administration committed to TRA implicit guarantees.
+
+  - branch_id: us_pacflt_inside_first_island_chain_wk1
+    question: U.S. Pacific Fleet conducts operations inside the first island chain after week 1
+    probability: 0.55
+    domain: operational-military
+    horizon: weeks 1-2
+    depends_on: [us_kinetic_within_7d]
+
+  # === allied access decisions ===
+  - branch_id: japan_base_access_combat_72h
+    question: Japan grants U.S. forces basing for combat operations within 72 hours
+    probability: 0.85
+    domain: strategic-political
+    horizon: 72h
+    depends_on: [prc_invasion_2027]
+    notes: Assumes credible attack signature and an LDP government in power.
+
+  - branch_id: philippines_edca_combat_access
+    question: Philippines grants combat access at EDCA sites within 7 days
+    probability: 0.60
+    domain: strategic-political
+    horizon: first 7 days
+    depends_on: [prc_invasion_2027]
+
+  - branch_id: australia_forces_committed_30d
+    question: Australia commits combat forces to the theater within 30 days
+    probability: 0.80
+    domain: strategic-political
+    horizon: first 30 days
+    depends_on: [prc_invasion_2027]
+
+  - branch_id: rok_usfk_redeploy_authorized
+    question: South Korea authorizes USFK redeployment to the Taiwan theater
+    probability: 0.30
+    domain: strategic-political
+    horizon: first 30 days
+    notes: South Korean political risk is high; DPRK opportunism a confounding factor.
+
+  # === third-party posture ===
+  - branch_id: india_formally_neutral
+    question: India remains formally neutral throughout the first 90 days
+    probability: 0.85
+    domain: strategic-political
+    horizon: first 90 days
+
+  - branch_id: russia_material_support_to_prc
+    question: Russia provides material military support to the PRC during the conflict
+    probability: 0.45
+    domain: strategic-political
+    horizon: first 90 days
+
+  - branch_id: eu_coordinated_sanctions
+    question: EU implements coordinated economic sanctions on the PRC within 30 days
+    probability: 0.65
+    domain: strategic-political
+    horizon: first 30 days
+    depends_on: [prc_invasion_2027]
+
+  # === escalation thresholds ===
+  - branch_id: prc_cyber_us_critical_infra
+    question: PRC conducts cyber attacks on U.S. homeland critical infrastructure during the conflict
+    probability: 0.55
+    domain: strategic-political
+    horizon: first 30 days
+    depends_on: [us_kinetic_within_7d]
+
+  - branch_id: conflict_stays_sub_nuclear_30d
+    question: Conflict remains below the nuclear threshold for the first 30 days
+    probability: 0.95
+    domain: strategic-political
+    horizon: first 30 days
+
+  - branch_id: prc_beachhead_established
+    question: PRC amphibious forces successfully establish a beachhead on Taiwan
+    probability: 0.50
+    domain: operational-military
+    horizon: first 14 days
+    depends_on: [prc_invasion_2027]
+
+  # === economic / industrial second-order ===
+  - branch_id: tsmc_offline_capacity_drop
+    question: Global advanced-node semiconductor production drops by more than 40% within 60 days
+    probability: 0.75
+    domain: economic
+    horizon: first 60 days
+    depends_on: [prc_invasion_2027]
+
+  - branch_id: cny_depreciates_15pct_30d
+    question: PRC currency (CNY) depreciates by more than 15% against USD within 30 days
+    probability: 0.40
+    domain: economic
+    horizon: first 30 days
+    depends_on: [prc_invasion_2027]
+
+  # === pre-conflict signaling ===
+  - branch_id: prc_seizes_outer_islands_first
+    question: PRC seizes Taiwan-controlled outer islands (Kinmen or Matsu) before the main invasion
+    probability: 0.35
+    domain: strategic-political
+    horizon: pre-invasion or first 7 days
+    depends_on: [prc_invasion_2027]
+    notes: A graduated-escalation pathway some analysts treat as more likely than a cold opening.
+
+  - branch_id: dprk_opportunistic_action_korea
+    question: DPRK conducts an opportunistic provocation or limited action against ROK during the conflict
+    probability: 0.40
+    domain: strategic-political
+    horizon: first 30 days
+    depends_on: [prc_invasion_2027]
+
+  - branch_id: us_security_guarantee_credible_at_invasion
+    question: U.S. extended-deterrence posture remains explicitly credible at the moment of invasion
+    probability: 0.70
+    domain: strategic-political
+    horizon: at invasion
+    notes: Reflects allied perception of U.S. resolve, not just stated policy.
+
+  - branch_id: nato_article_4_consultation_invoked
+    question: NATO invokes Article 4 consultations within 14 days of invasion
+    probability: 0.50
+    domain: strategic-political
+    horizon: first 14 days
+    depends_on: [prc_invasion_2027]
+
+  # === resolution ===
+  - branch_id: negotiated_settlement_90d
+    question: Conflict resolved by negotiated settlement within 90 days of invasion
+    probability: 0.20
+    domain: strategic-political
+    horizon: first 90 days
+    depends_on: [prc_invasion_2027]

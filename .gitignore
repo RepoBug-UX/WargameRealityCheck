@@ -1,0 +1,22 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.env
+.env.local
+.DS_Store
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+
+# cached API pulls + extraction outputs — runtime state, not source
+data/markets/**
+data/forecasts/**
+data/matches/**
+data/wargames/**
+!data/markets/.gitkeep
+!data/forecasts/.gitkeep
+!data/matches/.gitkeep
+!data/wargames/.gitkeep
