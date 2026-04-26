@@ -24,6 +24,7 @@ import os
 from pathlib import Path
 from typing import Any
 
+from .. import _env
 from .types import (
     ExtractionSource,
     Wargame,
@@ -31,6 +32,8 @@ from .types import (
     WargameBranch,
 )
 from .wargame_loader import load_wargame
+
+_env.load()
 
 DEFAULT_MODEL = "claude-opus-4-7"
 
@@ -44,6 +47,7 @@ def _passthrough_assumption(branch: WargameBranch) -> WargameAssumption:
         horizon=branch.horizon,
         dependencies=list(branch.depends_on),
         narrative_context=branch.notes or "",
+        citation=branch.citation,
         extracted_via="passthrough",
     )
 
@@ -155,6 +159,7 @@ def extract_with_llm(
                 horizon=branch.horizon,
                 dependencies=deps,
                 narrative_context=str(e.get("narrative_context") or branch.notes or ""),
+                citation=branch.citation,  # provenance is the analyst's, not the LLM's
                 extracted_via="llm-enriched",
             )
         )
@@ -174,10 +179,20 @@ def extract(wargame: Wargame, *, prefer_llm: bool = True) -> list[WargameAssumpt
 
 
 def assumptions_path_for(wargame_path: str | Path) -> Path:
-    """Where extracted assumptions are written for a given wargame input."""
-    p = Path(wargame_path)
+    """Where extracted assumptions are written for a given wargame input.
+
+    Convention: each wargame lives in its own subdirectory (e.g.,
+    `examples/csis_first_battle/wargame.yaml`), and the parent directory
+    name becomes the namespace. This avoids collisions between demos that
+    all name their input file `wargame.yaml`. For loose files in a generic
+    parent (`examples/`, `data/wargames/`), we fall back to the file stem.
+    """
+    p = Path(wargame_path).resolve()
     repo = Path(__file__).resolve().parents[2]
-    return repo / "data" / "wargames" / p.stem / "assumptions.json"
+    parent = p.parent.name
+    generic = {"examples", "wargames", "data", ""}
+    namespace = parent if parent and parent not in generic else p.stem
+    return repo / "data" / "wargames" / namespace / "assumptions.json"
 
 
 def write_assumptions(out_path: Path, assumptions: list[WargameAssumption]) -> None:

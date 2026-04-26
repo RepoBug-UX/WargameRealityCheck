@@ -1,0 +1,88 @@
+name: Asia Strategic Posture 2026 (illustrative synthetic)
+brief: |
+  ILLUSTRATIVE FIXTURE — NOT EXTRACTED FROM A REAL WARGAME.
+
+  This fixture exists to demonstrate the audit pipeline visually on a
+  densely-matched input. Its branches were deliberately chosen because
+  they map to currently-liquid prediction markets on Polymarket and Kalshi
+  (Taiwan invasion, Russia-Ukraine ceasefire, nuclear use, Fed rates,
+  US-China tariffs, etc.). A real analytical wargame would not look like
+  this — most real wargame branches are conditional on a precipitating
+  event having occurred and have no market counterpart. See the CSIS
+  First Battle fixture for the realistic case.
+
+  Probability values reflect a plausible analyst's forward-looking prior
+  for each question as of early 2026, calibrated independently of current
+  market prices. The point of the audit is to see where the analyst's
+  prior and the market disagree.
+
+branches:
+  - branch_id: prc_invasion_taiwan_2026
+    question: PRC initiates a large-scale amphibious invasion of Taiwan during 2026
+    probability: 0.05
+    domain: strategic-political
+    horizon: end of 2026
+    notes: Analyst's prior reflects sustained PLA buildup signal balanced against the costs of overt war.
+
+  - branch_id: russia_ukraine_ceasefire_2026
+    question: Russia and Ukraine reach a publicly announced ceasefire agreement before end of 2026
+    probability: 0.30
+    domain: strategic-political
+    horizon: end of 2026
+    notes: Analyst's prior is more pessimistic than recent commentary; structural war-aim incompatibility persists.
+
+  - branch_id: nuclear_weapon_used_2026
+    question: Any country detonates a nuclear weapon in 2026 (in conflict, test, or accident)
+    probability: 0.04
+    domain: strategic-political
+    horizon: end of 2026
+    notes: Analyst's prior reflects elevated tail-risk perception relative to historical baseline.
+
+  - branch_id: xi_remains_general_secretary_2026
+    question: Xi Jinping remains General Secretary of the CCP at end of 2026
+    probability: 0.95
+    domain: strategic-political
+    horizon: end of 2026
+    notes: No public signals of impending succession; consolidation appears complete.
+
+  - branch_id: us_new_china_tariffs_25pct_2026
+    question: U.S. announces new tariffs of 25% or higher on a major class of Chinese imports before end of 2026
+    probability: 0.70
+    domain: economic
+    horizon: end of 2026
+    notes: Analyst views tariff escalation as base case under current administration trajectory.
+
+  - branch_id: trump_xi_summit_2026
+    question: Trump and Xi hold an in-person bilateral summit before end of 2026
+    probability: 0.50
+    domain: strategic-political
+    horizon: end of 2026
+    notes: Possible during APEC or a standalone arrangement; depends on tariff trajectory.
+
+  - branch_id: israel_iran_direct_kinetic_exchange_2026
+    question: Israel and Iran exchange direct kinetic strikes on each other's territory in 2026
+    probability: 0.40
+    domain: strategic-political
+    horizon: end of 2026
+    notes: Analyst views proxy-war framework as fragile given recent escalatory pattern.
+
+  - branch_id: fed_cuts_50bp_2026
+    question: U.S. Federal Reserve cuts the federal funds rate by 50bp or more before end of 2026
+    probability: 0.60
+    domain: economic
+    horizon: end of 2026
+    notes: Premised on labor-market softening; analyst's prior incorporates dual-mandate balancing.
+
+  - branch_id: dprk_icbm_test_2026
+    question: North Korea conducts at least one full-range ICBM test launch in 2026
+    probability: 0.55
+    domain: strategic-political
+    horizon: end of 2026
+    notes: Periodic tests are baseline behavior; 2026 falls in expected cadence.
+
+  - branch_id: tsmc_new_fab_outside_taiwan_2026
+    question: TSMC publicly announces or breaks ground on a new fab outside Taiwan before end of 2026
+    probability: 0.65
+    domain: economic
+    horizon: end of 2026
+    notes: De-risking momentum is strong; specific announcement timing is uncertain.

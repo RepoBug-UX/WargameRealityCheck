@@ -21,7 +21,7 @@ from typing import Any
 
 import httpx
 
-from . import _cache
+from .. import _cache
 from .market_normalizer import (
     Market,
     PositionConcentration,

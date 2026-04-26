@@ -1,164 +1,292 @@
-name: First Battle Taiwan 2027 (synthetic)
+name: CSIS First Battle of the Next War — Taiwan 2026
 brief: |
-  A condensed structured representation in the spirit of the CSIS First Battle
-  wargame (Cancian et al., 2023). Models a People's Republic of China invasion
-  of Taiwan in 2027 and surfaces strategic-political assumptions that drive
-  the wargame's conclusion. Probabilities below are an analyst's illustrative
-  prior — the whole point of this tool is to audit them. This file is a
-  stand-in fixture, not the CSIS source data.
+  Manually-extracted base-case assumptions from the CSIS report "The First
+  Battle of the Next War: Wargaming a Chinese Invasion of Taiwan" (Cancian,
+  Cancian, & Heginbotham; CSIS, January 2023). Source PDF:
+  https://csis-website-prod.s3.amazonaws.com/s3fs-public/publication/230109_Cancian_FirstBattle_NextWar.pdf
+
+  Branches are extracted from the Executive Summary (pp.1-5) and Chapter 4
+  ("Assumptions — Base Cases and Excursion Cases," pp.52-66, particularly
+  Table 2 on pp.53-54 and the "Grand Strategic Assumptions" discussion on
+  pp.54-63). Each branch cites the page where the assumption is discussed.
+
+  Probability values are this auditor's interpretation of CSIS's qualitative
+  base-case judgments — the report uses "more likely than other
+  possibilities" language (p.52) rather than explicit probabilities. Where
+  the report indicates strong conviction the value sits 0.75-0.85; where
+  it acknowledges material uncertainty (multiple excursions explored, hedging
+  language) the value sits 0.55-0.70. These probabilities are exactly the
+  kind of unstated input the audit tool is designed to surface for review.
+
+  Tactical and operational base cases (force exchange ratios, missile
+  effectiveness, ship survivability, etc.) are not extracted — they don't
+  map to prediction-market questions and would dilute the audit signal.
 
 branches:
-  # === scenario triggers ===
-  - branch_id: prc_invasion_2027
-    question: PRC initiates a large-scale amphibious invasion of Taiwan during 2027
+  # ============================================================
+  # SCENARIO TRIGGER
+  # ============================================================
+  - branch_id: prc_invasion_2026
+    question: PRC initiates a large-scale amphibious invasion of Taiwan in 2026
     probability: 0.20
     domain: strategic-political
     horizon: 12 months
-    notes: Window assumes leadership consolidation completes and exercise tempo continues to escalate.
+    citation: CSIS pp.1, 6 (scenario premise)
+    notes: |
+      The CSIS wargame is conditional on invasion; the report does not assign
+      a probability to the trigger itself. The 0.20 here is the auditor's
+      interpolation reflecting unclassified analyst priors at time of writing.
+      The report explicitly disclaims that "Modeling an invasion does not
+      imply that it is inevitable or even probable" (p.5).
 
-  - branch_id: roc_sustained_resistance_30d
-    question: Taiwan armed forces mount organized resistance for at least 30 days after invasion
-    probability: 0.75
-    domain: operational-military
-    horizon: first 30 days
-    depends_on: [prc_invasion_2027]
-
-  # === U.S. response ===
-  - branch_id: us_kinetic_within_7d
-    question: U.S. forces engage in direct kinetic combat within 7 days of invasion
+  # ============================================================
+  # GRAND STRATEGIC: COMBATANT BEHAVIOR
+  # ============================================================
+  - branch_id: taiwan_resists_strongly
+    question: Taiwan armed forces resist to the maximum extent of their capabilities
     probability: 0.70
     domain: strategic-political
-    horizon: first 7 days
-    depends_on: [prc_invasion_2027]
-    notes: Premised on a sitting administration committed to TRA implicit guarantees.
+    horizon: campaign
+    depends_on: [prc_invasion_2026]
+    citation: CSIS pp.54-55 (base case — Taiwan resistance "Strong")
+    notes: |
+      Base case is "Taiwan resists vigorously." Report flags morale as "hard
+      to predict" and notes "worrying reports about CCP penetration of the
+      Taiwanese military" (p.55). The capitulation excursion is explicitly
+      out of scope — "immediate Taiwanese capitulation would mean that there
+      is no war."
 
-  - branch_id: us_pacflt_inside_first_island_chain_wk1
-    question: U.S. Pacific Fleet conducts operations inside the first island chain after week 1
-    probability: 0.55
-    domain: operational-military
-    horizon: weeks 1-2
-    depends_on: [us_kinetic_within_7d]
-
-  # === allied access decisions ===
-  - branch_id: japan_base_access_combat_72h
-    question: Japan grants U.S. forces basing for combat operations within 72 hours
-    probability: 0.85
-    domain: strategic-political
-    horizon: 72h
-    depends_on: [prc_invasion_2027]
-    notes: Assumes credible attack signature and an LDP government in power.
-
-  - branch_id: philippines_edca_combat_access
-    question: Philippines grants combat access at EDCA sites within 7 days
-    probability: 0.60
-    domain: strategic-political
-    horizon: first 7 days
-    depends_on: [prc_invasion_2027]
-
-  - branch_id: australia_forces_committed_30d
-    question: Australia commits combat forces to the theater within 30 days
-    probability: 0.80
-    domain: strategic-political
-    horizon: first 30 days
-    depends_on: [prc_invasion_2027]
-
-  - branch_id: rok_usfk_redeploy_authorized
-    question: South Korea authorizes USFK redeployment to the Taiwan theater
-    probability: 0.30
-    domain: strategic-political
-    horizon: first 30 days
-    notes: South Korean political risk is high; DPRK opportunism a confounding factor.
-
-  # === third-party posture ===
-  - branch_id: india_formally_neutral
-    question: India remains formally neutral throughout the first 90 days
-    probability: 0.85
-    domain: strategic-political
-    horizon: first 90 days
-
-  - branch_id: russia_material_support_to_prc
-    question: Russia provides material military support to the PRC during the conflict
-    probability: 0.45
-    domain: strategic-political
-    horizon: first 90 days
-
-  - branch_id: eu_coordinated_sanctions
-    question: EU implements coordinated economic sanctions on the PRC within 30 days
+  - branch_id: us_intervenes_immediately
+    question: U.S. forces commence direct kinetic intervention immediately upon Chinese attack
     probability: 0.65
     domain: strategic-political
-    horizon: first 30 days
-    depends_on: [prc_invasion_2027]
+    horizon: D-Day to D+2
+    depends_on: [prc_invasion_2026]
+    citation: CSIS pp.55-56 (base case — U.S. entry "Automatic")
+    notes: |
+      Base case assumes immediate U.S. intervention; "such intervention seems
+      more likely than not despite the lack of a formal treaty" (p.55).
+      Three distinct excursions explored (Taiwan stands alone; bombers
+      delayed D+4; combat starts D+14) signal the team's recognition of
+      material uncertainty here.
 
-  # === escalation thresholds ===
-  - branch_id: prc_cyber_us_critical_infra
-    question: PRC conducts cyber attacks on U.S. homeland critical infrastructure during the conflict
+  - branch_id: japan_grants_basing_immediately
+    question: Japan grants U.S. forces unrestricted basing for combat operations from the outset
+    probability: 0.80
+    domain: strategic-political
+    horizon: D-Day onward
+    depends_on: [prc_invasion_2026]
+    citation: CSIS pp.57-58 (base case — Japan basing rights "Granted")
+    notes: |
+      The report identifies Japan as the "linchpin" — "Without the use of
+      U.S. bases in Japan, U.S. fighter/attack aircraft cannot effectively
+      participate in the war" (p.4). Base case assumes Tokyo allows access
+      "freely from the outset" (p.58); "Japan neutral" excursion explored.
+
+  - branch_id: jsdf_engages_after_japan_attacked
+    question: Japan Self-Defense Forces engage Chinese forces in response to a Chinese attack on Japanese territory
+    probability: 0.85
+    domain: strategic-political
+    horizon: post-trigger
+    depends_on: [japan_grants_basing_immediately]
+    citation: CSIS p.58 (base case — JSDF entry "In response to attack")
+    notes: |
+      Base case assumes JSDF enters after Chinese strikes on U.S. bases on
+      Japanese soil. Strong constitutional grounding via Article V of the
+      U.S.-Japan Mutual Security Treaty.
+
+  - branch_id: jsdf_offensive_ops_post_entry
+    question: JSDF conducts offensive operations away from Japanese territory after entering the war
+    probability: 0.65
+    domain: strategic-political
+    horizon: post-entry
+    depends_on: [jsdf_engages_after_japan_attacked]
+    citation: CSIS p.58 (base case — JSDF operations "All allowed after entry")
+    notes: |
+      Base case allows expeditionary JSDF action; "JSDF remains defensive"
+      excursion captures legal/political constraints that might prevent it.
+
+  # ============================================================
+  # GRAND STRATEGIC: ALLIED ACCESS / POSTURE
+  # ============================================================
+  - branch_id: australia_participates
+    question: Australia participates in the conflict and provides access, basing, and overflight
+    probability: 0.85
+    domain: strategic-political
+    horizon: campaign
+    depends_on: [prc_invasion_2026]
+    citation: CSIS p.61 (base case — Australia provides access/basing/overflight)
+    notes: |
+      "Because of its close relationship with the United States and the
+      stationing of U.S. forces there in peacetime, Australia would give
+      access, basing, and overflight" (p.61).
+
+  - branch_id: philippines_remains_neutral
+    question: Philippines remains neutral and does not grant U.S. basing for combat operations
     probability: 0.55
     domain: strategic-political
+    horizon: campaign
+    depends_on: [prc_invasion_2026]
+    citation: CSIS pp.61-62 (base case — Philippines "Out")
+    notes: |
+      Base case assumes Philippine neutrality, driven by Duterte-era posture
+      and military weakness. Report explicitly notes Marcos Jr.'s mixed
+      signals and the post-Duterte VFA reaffirmation as reasons "the
+      Philippines allows U.S. basing" excursion is plausible.
+
+  - branch_id: south_korea_releases_2_squadrons
+    question: South Korea releases two of four USFK fighter squadrons for use in the Taiwan theater
+    probability: 0.55
+    domain: strategic-political
+    horizon: D+0 to D+30
+    depends_on: [prc_invasion_2026]
+    citation: CSIS p.61 (base case for ROK posture)
+    notes: |
+      Project assumes two of four USFK squadrons released; the other two
+      remain for DPRK deterrence. Implicit claim about Seoul's calculus
+      under simultaneous DPRK/PRC pressure.
+
+  - branch_id: india_singapore_thailand_vietnam_passive
+    question: India, Singapore, Thailand, and Vietnam take a passive stance — overflight permitted but no operations from their territory
+    probability: 0.75
+    domain: strategic-political
+    horizon: campaign
+    depends_on: [prc_invasion_2026]
+    citation: CSIS p.60 (base case — passive approach)
+    notes: |
+      "All would be concerned about Chinese encroachment but fear Chinese
+      power. They would be sympathetic to the United States and Taiwan but
+      reluctant to expose themselves to Chinese attack" (p.60).
+
+  - branch_id: nato_eu_limited_to_sanctions
+    question: NATO/European countries limit themselves to economic sanctions and do not participate militarily in the initial conflict stages
+    probability: 0.75
+    domain: strategic-political
     horizon: first 30 days
-    depends_on: [us_kinetic_within_7d]
+    depends_on: [prc_invasion_2026]
+    citation: CSIS pp.62-63 (base case — Europe limited to sanctions)
+    notes: |
+      Report assumes "most European countries would limit themselves to
+      economic sanctions on China" (p.62). UK/France carriers/SSNs noted
+      as "useful but not decisive" if eventually deployed.
+
+  - branch_id: no_opportunistic_aggression
+    question: No third-party opportunistic aggression (DPRK, Russia, Iran) occurs during the conflict
+    probability: 0.70
+    domain: strategic-political
+    horizon: first 90 days
+    depends_on: [prc_invasion_2026]
+    citation: CSIS pp.63 (base case — Opportunistic aggression "None")
+    notes: |
+      Base case grounded in historical precedent (no opportunistic
+      aggression during U.S. Mideast wars or Korea/Vietnam). "Simultaneous
+      crises" excursion captures the alternative.
+
+  # ============================================================
+  # MOBILIZATION & TIMING
+  # ============================================================
+  - branch_id: prc_mobilizes_d_minus_30
+    question: PRC mobilizes for invasion approximately 30 days before D-Day
+    probability: 0.60
+    domain: operational-military
+    horizon: pre-D-Day
+    depends_on: [prc_invasion_2026]
+    citation: CSIS p.53 Table 2 (base case — Chinese mobilization D-30)
+    notes: Table 2 row; specific timing implies meaningful but not overwhelming warning window.
+
+  - branch_id: us_mobilizes_d_minus_14
+    question: U.S. mobilization (show of force, force flow) begins approximately 14 days before D-Day
+    probability: 0.55
+    domain: strategic-political
+    horizon: pre-D-Day
+    depends_on: [prc_invasion_2026]
+    citation: CSIS p.53 Table 2 (base case — U.S. mobilization D-14)
+    notes: |
+      Base case assumes U.S. detects PRC mobilization and responds with a
+      visible force flow. "U.S. mobilizes on D-Day; no show of force"
+      excursion captures the alternative where political indecision or
+      strategic surprise delays U.S. preparation.
+
+  - branch_id: taiwan_reaction_immediate
+    question: Taiwanese forces react immediately upon Chinese attack (mobilize, shoot back, defend)
+    probability: 0.70
+    domain: operational-military
+    horizon: D-Day to D+2
+    depends_on: [taiwan_resists_strongly]
+    citation: CSIS p.54 Table 2 (base case — Taiwanese reaction "Immediate"), excursion p.54 ("paralyzed to D+4")
+    notes: Captures C2/decision-cycle rather than morale.
+
+  # ============================================================
+  # RULES OF ENGAGEMENT
+  # ============================================================
+  - branch_id: prc_strikes_us_japanese_territory_authorized
+    question: PRC conducts strikes on U.S. forces and bases on Japanese territory during the conflict
+    probability: 0.85
+    domain: strategic-political
+    horizon: campaign
+    depends_on: [prc_invasion_2026]
+    citation: CSIS p.54 Table 2 (base case — Chinese strikes on U.S./Japanese territory "Authorized")
+    notes: Implies the war does not stay confined to Taiwan and its immediate approaches.
+
+  - branch_id: us_strikes_mainland_authorized
+    question: U.S. strikes on mainland China are authorized during the conflict
+    probability: 0.55
+    domain: strategic-political
+    horizon: campaign
+    depends_on: [us_intervenes_immediately]
+    citation: CSIS p.54 Table 2 (base case — U.S. strikes on mainland "Authorized"); pp.4, 117 (warning against)
+    notes: |
+      Tension in the report: Table 2 lists base case as "Authorized," but
+      Chapter 7 recommendations explicitly warn "Do not plan on striking the
+      mainland... The National Command Authority might withhold permission
+      because of the grave risks of escalation" (p.4). Probability reflects
+      the genuine uncertainty surfaced by this internal contradiction.
+
+  # ============================================================
+  # POST-INVASION COURSE
+  # ============================================================
+  - branch_id: us_taiwan_japan_defeat_invasion
+    question: A combined U.S./Taiwan/Japan defense defeats the conventional Chinese amphibious invasion
+    probability: 0.60
+    domain: operational-military
+    horizon: 3-4 weeks
+    depends_on:
+      - taiwan_resists_strongly
+      - us_intervenes_immediately
+      - japan_grants_basing_immediately
+    citation: CSIS pp.1-2 (Executive Summary — "in most scenarios" defense succeeded)
+    notes: |
+      "In most scenarios, the United States/Taiwan/Japan defeated a
+      conventional amphibious invasion by China and maintained an autonomous
+      Taiwan" (p.1). Base-case outcome conditional on the four conditions
+      for success holding (p.3-4).
+
+  - branch_id: us_loses_dozens_ships_hundreds_aircraft
+    question: U.S. and allied losses include dozens of ships, hundreds of aircraft, and tens of thousands of servicemembers in the first three weeks
+    probability: 0.65
+    domain: operational-military
+    horizon: 3 weeks
+    depends_on: [us_intervenes_immediately]
+    citation: CSIS pp.1, 4 (Executive Summary — projected losses)
+    notes: Specifically "two carriers and 10 to 20 large surface combatants" per p.4.
+
+  - branch_id: china_amphibious_force_broken
+    question: PRC amphibious force is degraded such that the core of its amphibious capability is broken
+    probability: 0.55
+    domain: operational-military
+    horizon: 3-4 weeks
+    depends_on: [us_taiwan_japan_defeat_invasion]
+    citation: CSIS p.3 (Executive Summary — "core of its amphibious forces is broken")
 
   - branch_id: conflict_stays_sub_nuclear_30d
     question: Conflict remains below the nuclear threshold for the first 30 days
-    probability: 0.95
+    probability: 0.92
     domain: strategic-political
     horizon: first 30 days
-
-  - branch_id: prc_beachhead_established
-    question: PRC amphibious forces successfully establish a beachhead on Taiwan
-    probability: 0.50
-    domain: operational-military
-    horizon: first 14 days
-    depends_on: [prc_invasion_2027]
-
-  # === economic / industrial second-order ===
-  - branch_id: tsmc_offline_capacity_drop
-    question: Global advanced-node semiconductor production drops by more than 40% within 60 days
-    probability: 0.75
-    domain: economic
-    horizon: first 60 days
-    depends_on: [prc_invasion_2027]
-
-  - branch_id: cny_depreciates_15pct_30d
-    question: PRC currency (CNY) depreciates by more than 15% against USD within 30 days
-    probability: 0.40
-    domain: economic
-    horizon: first 30 days
-    depends_on: [prc_invasion_2027]
-
-  # === pre-conflict signaling ===
-  - branch_id: prc_seizes_outer_islands_first
-    question: PRC seizes Taiwan-controlled outer islands (Kinmen or Matsu) before the main invasion
-    probability: 0.35
-    domain: strategic-political
-    horizon: pre-invasion or first 7 days
-    depends_on: [prc_invasion_2027]
-    notes: A graduated-escalation pathway some analysts treat as more likely than a cold opening.
-
-  - branch_id: dprk_opportunistic_action_korea
-    question: DPRK conducts an opportunistic provocation or limited action against ROK during the conflict
-    probability: 0.40
-    domain: strategic-political
-    horizon: first 30 days
-    depends_on: [prc_invasion_2027]
-
-  - branch_id: us_security_guarantee_credible_at_invasion
-    question: U.S. extended-deterrence posture remains explicitly credible at the moment of invasion
-    probability: 0.70
-    domain: strategic-political
-    horizon: at invasion
-    notes: Reflects allied perception of U.S. resolve, not just stated policy.
-
-  - branch_id: nato_article_4_consultation_invoked
-    question: NATO invokes Article 4 consultations within 14 days of invasion
-    probability: 0.50
-    domain: strategic-political
-    horizon: first 14 days
-    depends_on: [prc_invasion_2027]
-
-  # === resolution ===
-  - branch_id: negotiated_settlement_90d
-    question: Conflict resolved by negotiated settlement within 90 days of invasion
-    probability: 0.20
-    domain: strategic-political
-    horizon: first 90 days
-    depends_on: [prc_invasion_2027]
+    depends_on: [prc_invasion_2026]
+    citation: CSIS pp.4, 65 (escalation discussion); pp.151+ Appendix B
+    notes: |
+      Implicit assumption — the wargame's results are conditional on
+      sub-nuclear conflict; the report repeatedly flags nuclear escalation
+      as the dominant strategic risk but treats it as a low-probability
+      branch within the operational timeline modeled.

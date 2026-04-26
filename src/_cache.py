@@ -6,8 +6,9 @@ import time
 from pathlib import Path
 from typing import Any
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CACHE_DIR = REPO_ROOT / "data" / "markets"
+FORECASTS_CACHE_DIR = REPO_ROOT / "data" / "forecasts"
 DEFAULT_TTL_SECONDS = 60 * 60  # 1h — fresh enough for an audit, cheap on the API
 
 

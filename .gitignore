@@ -11,12 +11,14 @@ venv/
 .mypy_cache/
 *.egg-info/
 
-# cached API pulls + extraction outputs — runtime state, not source
+# cached API pulls + extraction/audit outputs — runtime state, not source
 data/markets/**
 data/forecasts/**
 data/matches/**
 data/wargames/**
+data/audits/**
 !data/markets/.gitkeep
 !data/forecasts/.gitkeep
 !data/matches/.gitkeep
 !data/wargames/.gitkeep
+!data/audits/.gitkeep

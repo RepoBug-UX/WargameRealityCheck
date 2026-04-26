@@ -42,6 +42,10 @@ class WargameBranch(BaseModel):
     horizon: str | None = None  # free-form, e.g. "72h", "first 7 days", "campaign"
     depends_on: list[str] = Field(default_factory=list)  # other branch_ids
     notes: str | None = None  # narrative context the analyst wants preserved
+    # Provenance for extracted assumptions — page or section reference in
+    # the source document (e.g., "CSIS p.55"). When present, the audit
+    # output cites it so a reader can verify the extraction against source.
+    citation: str | None = None
 
     @field_validator("branch_id")
     @classmethod
@@ -79,5 +83,6 @@ class WargameAssumption(BaseModel):
     horizon: str | None
     dependencies: list[str]
     narrative_context: str
+    citation: str | None = None
     extracted_via: ExtractionSource
     approved: bool = False  # set True after human review
