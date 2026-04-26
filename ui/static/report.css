@@ -306,3 +306,58 @@ figcaption .source-line { display: block; margin-top: 6px; font-size: 12px; }
 .no-match-list { font-family: var(--mono); font-size: 13px; color: var(--text-muted); }
 .no-match-list code { background: transparent; padding: 0; color: var(--text-muted); }
 .no-match-list li { margin: 3px 0; }
+
+/* ---- markets table — cross-wargame view ---- */
+.markets-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 18px 0; }
+.markets-table th {
+  text-align: left;
+  font-family: var(--sans);
+  font-weight: 600; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--text-muted);
+  padding: 8px 10px 6px 0;
+  border-bottom: 1px solid var(--rule-strong);
+  vertical-align: bottom;
+}
+.markets-table td {
+  padding: 10px 10px 10px 0;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+  font-family: var(--sans);
+}
+.markets-table td.q { font-family: var(--serif); font-size: 14px; line-height: 1.35; }
+.markets-table td.q small { display: block; color: var(--text-muted); font-size: 12px; margin-top: 3px; }
+.markets-table td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.markets-table td.delta { font-weight: 600; }
+.markets-table td.platform {
+  font-size: 11px; color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 0.05em; white-space: nowrap;
+}
+.markets-table td.branch-link a { color: var(--text); text-decoration: none; }
+.markets-table td.branch-link a:hover { color: var(--link-hover); text-decoration: underline; }
+.markets-table td.branch-link small { display: block; color: var(--text-muted); font-size: 11px;
+  font-family: var(--mono); margin-top: 2px; }
+
+.markets-table tr.strong-disagreement {
+  background: var(--accent-action-bg);
+}
+.markets-table tr.strong-disagreement td.delta { color: var(--accent-action); }
+.markets-table tr.mild-disagreement td.delta { color: var(--accent-tension); }
+.markets-table tr.structured td { color: var(--text-muted); font-style: italic; }
+.markets-table tr.structured td.q { font-style: normal; }
+
+.markets-table tr.section-row td {
+  padding-top: 22px; padding-bottom: 6px;
+  border-bottom: 1px solid var(--rule-strong);
+  font-family: var(--sans); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--text-muted); font-weight: 600;
+}
+
+/* small color key for the legend below the table */
+.legend { font-family: var(--sans); font-size: 12px; color: var(--text-muted);
+  display: flex; gap: 18px; flex-wrap: wrap; margin-top: 10px; }
+.legend-swatch { display: inline-block; width: 14px; height: 14px; vertical-align: middle;
+  margin-right: 5px; border: 1px solid var(--rule); }
+.legend-swatch.strong { background: var(--accent-action-bg); }
+.legend-swatch.mild { background: var(--bg-elevated); }

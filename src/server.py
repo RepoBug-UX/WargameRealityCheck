@@ -165,6 +165,90 @@ def index(request: Request) -> HTMLResponse:
     )
 
 
+def _gather_market_refs() -> list[dict[str, Any]]:
+    """Walk every wargame's audit and collect market references.
+
+    One row per (wargame, branch, market). Sorted by |Δ| descending so
+    strong disagreements surface first. Structured comparisons (apples-
+    to-oranges) appear with delta=None and sort to the bottom.
+    """
+    rows: list[dict[str, Any]] = []
+    for w in _wargames_available():
+        ctx = _load_namespace(w["namespace"])
+        audit = ctx["audit"]
+        if audit is None:
+            continue
+        action_set = set(audit.action_list)
+        assumptions_by = ctx["assumptions_by_branch"]
+        for b in audit.branches:
+            if b.strict is not None:
+                d = b.strict
+                rows.append({
+                    "kind": "strict",
+                    "market_platform": d.market_platform,
+                    "market_id": d.market_id,
+                    "market_question": d.market_question,
+                    "market_url": d.market_url,
+                    "wargame_namespace": w["namespace"],
+                    "wargame_name": w["name"],
+                    "branch_id": b.branch_id,
+                    "branch_question": (
+                        assumptions_by[b.branch_id].question_text
+                        if b.branch_id in assumptions_by else b.branch_id
+                    ),
+                    "wargame_probability": d.wargame_probability,
+                    "market_price": d.market_price_compared,
+                    "polarity": d.polarity_applied,
+                    "delta": d.delta,
+                    "abs_delta": d.abs_delta,
+                    "in_action": b.branch_id in action_set,
+                })
+            elif b.structured is not None:
+                s = b.structured
+                rows.append({
+                    "kind": "structured",
+                    "market_platform": s.market_platform,
+                    "market_id": s.market_id,
+                    "market_question": s.market_question,
+                    "market_url": s.market_url,
+                    "wargame_namespace": w["namespace"],
+                    "wargame_name": w["name"],
+                    "branch_id": b.branch_id,
+                    "branch_question": (
+                        assumptions_by[b.branch_id].question_text
+                        if b.branch_id in assumptions_by else b.branch_id
+                    ),
+                    "wargame_probability": s.wargame_probability,
+                    "market_price": s.raw_market_price,
+                    "polarity": s.polarity_applied,
+                    "delta": None,  # structured: no single delta
+                    "abs_delta": None,
+                    "in_action": False,
+                    "conditioning_event": s.conditioning_event,
+                    "comparison_caveat": s.comparison_caveat,
+                })
+    # Sort: strict by |Δ| desc; structured at the end.
+    rows.sort(
+        key=lambda r: (
+            0 if r["kind"] == "strict" else 1,
+            -(r["abs_delta"] or 0),
+        )
+    )
+    return rows
+
+
+@app.get("/markets", response_class=HTMLResponse)
+def markets_view(request: Request) -> HTMLResponse:
+    rows = _gather_market_refs()
+    # Distinct markets count
+    distinct = len({(r["market_platform"], r["market_id"]) for r in rows})
+    return templates.TemplateResponse(
+        request,
+        "markets.html",
+        {"rows": rows, "n_rows": len(rows), "n_distinct_markets": distinct},
+    )
+
+
 @app.get("/wargame/{namespace}", response_class=HTMLResponse)
 def wargame_view(namespace: str, request: Request) -> HTMLResponse:
     ctx = _load_namespace(namespace)

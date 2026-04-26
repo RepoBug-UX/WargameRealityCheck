@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Markets — Wargame Reality Check{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="/">Index</a> &nbsp;›&nbsp; <span>Markets</span>
+</div>
+
+<section class="summary">
+  <div class="source-line">Cross-wargame view</div>
+  <h1>Markets referenced by audited wargames</h1>
+  <p class="brief">Every prediction market that appears as a matched candidate in the audit pipeline,
+  one row per <em>(wargame, branch, market)</em> reference. Sorted by absolute disagreement so
+  the strongest signals surface first. Highlighted rows are where the wargame's stated
+  probability and the live market price meaningfully diverge.</p>
+</section>
+
+<div class="stats">
+  <div><span class="num">{{ n_distinct_markets }}</span><span class="label">Distinct markets</span></div>
+  <div><span class="num">{{ n_rows }}</span><span class="label">References</span></div>
+  <div><span class="num">{{ rows | selectattr("kind", "equalto", "strict") | list | length }}</span><span class="label">Strict</span></div>
+  <div><span class="num">{{ rows | selectattr("kind", "equalto", "structured") | list | length }}</span><span class="label">Structured</span></div>
+</div>
+
+{% set strict_rows = rows | selectattr("kind", "equalto", "strict") | list %}
+{% set structured_rows = rows | selectattr("kind", "equalto", "structured") | list %}
+
+<table class="markets-table">
+  <thead>
+    <tr>
+      <th>Market question</th>
+      <th>Wargame branch</th>
+      <th class="num">Wargame %</th>
+      <th class="num">Market %</th>
+      <th class="num">Δ</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if strict_rows %}
+      <tr class="section-row"><td colspan="5">Strict matches — apples-to-apples</td></tr>
+      {% for r in strict_rows %}
+        {% set tier = "strong-disagreement" if r.abs_delta >= 0.20 else ("mild-disagreement" if r.abs_delta >= 0.05 else "near-alignment") %}
+        <tr class="{{ tier }}">
+          <td class="q">
+            <a href="{{ r.market_url }}">{{ r.market_question }}</a>
+            <small>
+              <span class="platform">{{ r.market_platform }}</span>
+              {% if r.polarity != "aligned" %} &middot; polarity: {{ r.polarity }}{% endif %}
+            </small>
+          </td>
+          <td class="branch-link">
+            <a href="/wargame/{{ r.wargame_namespace }}/branch/{{ r.branch_id }}">
+              {{ r.branch_question | truncate(60, True) }}
+            </a>
+            <small>{{ r.wargame_name | truncate(50, True) }}</small>
+          </td>
+          <td class="num">{{ "%.2f"|format(r.wargame_probability) }}</td>
+          <td class="num">{{ "%.2f"|format(r.market_price) }}</td>
+          <td class="num delta">{{ "%+.2f"|format(r.delta) }}{% if r.in_action %} &nbsp;★{% endif %}</td>
+        </tr>
+      {% endfor %}
+    {% endif %}
+    {% if structured_rows %}
+      <tr class="section-row"><td colspan="5">Structured comparisons — wargame is conditional, market is unconditional</td></tr>
+      {% for r in structured_rows %}
+        <tr class="structured">
+          <td class="q">
+            <a href="{{ r.market_url }}">{{ r.market_question }}</a>
+            <small><span class="platform">{{ r.market_platform }}</span></small>
+          </td>
+          <td class="branch-link">
+            <a href="/wargame/{{ r.wargame_namespace }}/branch/{{ r.branch_id }}">
+              {{ r.branch_question | truncate(60, True) }}
+            </a>
+            <small>
+              {{ r.wargame_name | truncate(40, True) }}
+              {% if r.conditioning_event %} &middot; conditional on {{ r.conditioning_event | truncate(35, True) }}{% endif %}
+            </small>
+          </td>
+          <td class="num">{{ "%.2f"|format(r.wargame_probability) }}</td>
+          <td class="num">{{ "%.2f"|format(r.market_price) }}</td>
+          <td class="num">—</td>
+        </tr>
+      {% endfor %}
+    {% endif %}
+    {% if not strict_rows and not structured_rows %}
+      <tr><td colspan="5"><em>No matched markets found across any audited wargame yet. Run the audit
+        pipeline on a wargame and approve some matches to populate this view.</em></td></tr>
+    {% endif %}
+  </tbody>
+</table>
+
+<div class="legend">
+  <span><span class="legend-swatch strong"></span>Strong disagreement (|Δ| ≥ 0.20)</span>
+  <span><span class="legend-swatch mild"></span>Mild disagreement (0.05 ≤ |Δ| &lt; 0.20)</span>
+  <span><strong>★</strong> in the wargame's action list</span>
+</div>
+
+<p style="font-family: var(--sans); font-size: 12px; color: var(--text-muted); margin-top: 24px;">
+  <em>Strict matches</em> are apples-to-apples comparisons where the matched market resolves on
+  the same event the wargame branch asks about. <em>Structured comparisons</em> are pairs where
+  the wargame's conditional probability and the market's unconditional price measure different
+  things — they appear here for cross-reference but the comparison is not a single disagreement
+  number. See the per-branch drilldown for the full caveat text.
+</p>
+{% endblock %}
